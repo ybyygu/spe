@@ -1,0 +1,11 @@
+# [[file:~/Workspace/Programming/spe/spe.note::6344ef00-3a4e-4ce3-aba3-53fc52aba4ae][6344ef00-3a4e-4ce3-aba3-53fc52aba4ae]]
+[package]
+name = "spe"
+version = "0.0.1"
+authors = ["Wenping Guo <ybyygu@gmail.com>"]
+
+[dependencies]
+approx = "*"
+itertools = "*"
+rand = ">=0.5.0-pre.0"
+# 6344ef00-3a4e-4ce3-aba3-53fc52aba4ae ends here

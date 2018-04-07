@@ -1,0 +1,6 @@
+#+TITLE: Stochastic Proximity Embedding Algorithm
+#+SETUPFILE: ~/Notes/common.org
+
+* References
+1) Agrafiotis, D. K. J. Comput. Chem. 2003, 24 (10), 1215–1221. (SPE)
+2) Agrafiotis, D. K.; Xu, H. J. Chem. Inf. Comput. Sci. 2003, 43 (2), 475–484. (ISPE)
