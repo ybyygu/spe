@@ -86,13 +86,13 @@ fn ispe(points: &mut Points, bounds: Vec<Vec<f64>>, maxcycle: usize, maxstep: us
 
     // update the positions of pairs iteratively
     let mut rng = thread_rng();
+    let dlam = (maxlam - minlam)/(maxcycle as f64);
     for icycle in 0..maxcycle {
-        lam -= (maxlam - minlam) / maxcycle as f64;
+        lam -= dlam;
         for istep in 0..maxstep {
             let &(i, j) = rng.choose(&possible_pairs).unwrap();
             let mut pi = points[i];
             let mut pj = points[j];
-            println!("cycle {:?}, step: {:?}", icycle, istep);
             let (lij, uij) = target_distances(&bounds, i, j);
             update_coordinates_of_pair(&mut pi, &mut pj, lij, uij, lam);
             // set back
@@ -118,3 +118,56 @@ fn target_distances(bounds: &Vec<Vec<f64>>, i: usize, j: usize) -> (f64, f64) {
     (lij, uij)
 }
 // 4edc3f04-fac1-48fa-bc4e-258bf982a1ef ends here
+
+// [[file:~/Workspace/Programming/spe/spe.note::4432eb02-aa74-459f-9658-29bc3a7f8ef5][4432eb02-aa74-459f-9658-29bc3a7f8ef5]]
+/// The pivoted variant of Stochastic Proximity Embedding (PSPE)
+///
+/// References
+/// ----------
+/// (1) J. Mol. Graph. Model. 2003, 22 (2), 133–140.
+/// (2) J. Chem. Inf. Model. 2011, 51 (11), 2852–2859.
+///
+fn pspe(points: &mut Points, bounds: Vec<Vec<f64>>, maxcycle: usize, maxstep: usize, maxlam: f64, minlam: f64) {
+    assert!(maxlam > minlam, "max learning rate is smaller than min learning rate.");
+    assert!(minlam > 0.0, "learning rate cannot be smaller than zero.");
+
+    let mut lam = maxlam;
+
+    // create a list of adjustable pairs
+    let mut possible_pairs = vec![];
+    let npoints = points.len();
+    for i in 0..npoints {
+        for j in 0..npoints {
+            if i != j {
+                possible_pairs.push((i, j));
+            }
+        }
+    }
+
+    let indices: Vec<_> = (0..npoints).collect();
+    // update the positions of pairs iteratively
+    let dlam = (maxlam - minlam)/(maxcycle as f64);
+    let mut rng = thread_rng();
+    for icycle in 0..maxcycle {
+        lam -= dlam;
+        // index of the pivot point
+        let &i = rng.choose(&indices).unwrap();
+        let mut pi = points[i];
+        for istep in 0..maxstep {
+            let mut j = i;
+            while j == i {
+                j = *rng.choose(&indices).unwrap();
+            };
+
+            // get lower and upper bounds for target distance
+            let (lij, uij) = target_distances(&bounds, i, j);
+
+            let mut pj = points[j];
+            update_coordinates_of_pair(&mut pi, &mut pj, lij, uij, lam);
+            // set back
+            points[i] = pi;
+            points[j] = pj;
+        }
+    }
+}
+// 4432eb02-aa74-459f-9658-29bc3a7f8ef5 ends here
