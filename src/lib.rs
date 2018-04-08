@@ -1,15 +1,50 @@
-// [[file:~/Workspace/Programming/spe/spe.note::b3eec740-ffac-473e-bc66-bbeb404bf7b5][b3eec740-ffac-473e-bc66-bbeb404bf7b5]]
+// [[file:~/Workspace/Programming/spe/spe.note::e4306f9a-6868-4b61-8375-1707b4917fee][e4306f9a-6868-4b61-8375-1707b4917fee]]
 #[macro_use]
 extern crate approx;
-
 extern crate rand;
 extern crate itertools;
 
 type Point3D = [f64; 3];
 type Points = Vec<Point3D>;
+type Bounds = Vec<Vec<f64>>;
 
 const EPSILON: f64 = 1.0E-6;
 
+struct SPE {
+    max_lambda : f64,
+    min_lambda : f64,
+    maxcycle   : usize,
+    maxstep    : usize,
+}
+
+impl SPE {
+    fn new() -> Self {
+        SPE {
+            min_lambda : 0.01,
+            max_lambda : 1.0,
+            maxcycle   : 500,
+            maxstep    : 100,
+        }
+    }
+
+    fn build() {
+        ;
+    }
+}
+
+#[inline]
+pub fn euclidean_distance(p1: Point3D, p2: Point3D) -> f64 {
+    let mut d2 = 0.0;
+    for v in 0..3 {
+        let dv = p2[v] - p1[v];
+        d2 += dv*dv;
+    }
+
+    d2.sqrt()
+}
+// e4306f9a-6868-4b61-8375-1707b4917fee ends here
+
+// [[file:~/Workspace/Programming/spe/spe.note::b3eec740-ffac-473e-bc66-bbeb404bf7b5][b3eec740-ffac-473e-bc66-bbeb404bf7b5]]
 /// Update the coordinates pi and pj
 /// Parameters
 /// ----------
@@ -19,12 +54,9 @@ const EPSILON: f64 = 1.0E-6;
 /// lam   : a parameter defining learning rate
 ///
 fn update_coordinates_of_pair(pi: &mut Point3D, pj: &mut Point3D, lij: f64, uij: f64, lam: f64) {
-    let dx = pj[0] - pi[0];
-    let dy = pj[1] - pi[1];
-    let dz = pj[2] - pi[2];
-    let dij = (dx*dx + dy*dy + dz*dz).sqrt();
+    let dij = euclidean_distance(*pi, *pj);
 
-    debug_assert!(uij >= lij);
+    debug_assert!(uij >= lij, "uij={:?}, lij={:?}", uij, lij);
     if dij >= lij && dij <= uij {
         return;
     }
@@ -67,7 +99,7 @@ use rand::{thread_rng, Rng};
 /// (1) Agrafiotis, D. K. J. Comput. Chem. 2003, 24 (10), 1215–1221. (SPE)
 /// (2) Agrafiotis, D. K.; Xu, H. J. Chem. Inf. Comput. Sci. 2003, 43 (2), 475–484. (ISPE)
 ///
-fn ispe(points: &mut Points, bounds: Vec<Vec<f64>>, maxcycle: usize, maxstep: usize, maxlam: f64, minlam: f64) {
+fn ispe(points: &mut Points, bounds: &Bounds, maxcycle: usize, maxstep: usize, maxlam: f64, minlam: f64) {
     assert!(maxlam > minlam, "max learning rate is smaller than min learning rate.");
     assert!(minlam > 0.0, "learning rate cannot be smaller than zero.");
 
@@ -104,7 +136,7 @@ fn ispe(points: &mut Points, bounds: Vec<Vec<f64>>, maxcycle: usize, maxstep: us
 
 use std::mem;
 /// get the lower and upper bound of target distances for a pair of points
-fn target_distances(bounds: &Vec<Vec<f64>>, i: usize, j: usize) -> (f64, f64) {
+fn target_distances(bounds: &Bounds, i: usize, j: usize) -> (f64, f64) {
     // make sure i < j
     let mut i = i;
     let mut j = j;
@@ -127,7 +159,7 @@ fn target_distances(bounds: &Vec<Vec<f64>>, i: usize, j: usize) -> (f64, f64) {
 /// (1) J. Mol. Graph. Model. 2003, 22 (2), 133–140.
 /// (2) J. Chem. Inf. Model. 2011, 51 (11), 2852–2859.
 ///
-fn pspe(points: &mut Points, bounds: Vec<Vec<f64>>, maxcycle: usize, maxstep: usize, maxlam: f64, minlam: f64) {
+pub fn pspe(points: &mut Points, bounds: &Bounds, maxcycle: usize, maxstep: usize, maxlam: f64, minlam: f64) {
     assert!(maxlam > minlam, "max learning rate is smaller than min learning rate.");
     assert!(minlam > 0.0, "learning rate cannot be smaller than zero.");
 
